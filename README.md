@@ -5,24 +5,34 @@
 
 <!-- badges: start -->
 
-[![Travis build
-status](https://travis-ci.org/llrs/experDesign.svg?branch=master)](https://travis-ci.org/llrs/experDesign)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/experDesign)](https://CRAN.R-project.org/package=experDesign)
+[![R build
+status](https://github.com/llrs/experDesign/workflows/R-CMD-check/badge.svg)](https://github.com/llrs/experDesign/actions?workflow=R-CMD-check)
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/llrs/experDesign?branch=master&svg=true)](https://ci.appveyor.com/project/llrs/experDesign)
+[![Travis build
+status](https://travis-ci.org/llrs/experDesign.svg?branch=master)](https://travis-ci.org/llrs/experDesign)
 [![Coverage
 status](https://codecov.io/gh/llrs/experDesign/branch/master/graph/badge.svg)](https://codecov.io/github/llrs/experDesign?branch=master)
-[![lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+[![Lifecycle:
+stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://www.tidyverse.org/lifecycle/#stable)
 [![Project Status: Active - The project has reached a stable, usable
 state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![R build
-status](https://github.com/llrs/experDesign/workflows/R-CMD-check/badge.svg)](https://github.com/llrs/experDesign/actions?workflow=R-CMD-check)
 <!-- badges: end -->
 
 The goal of experDesign is to help you decide which samples go in which
 batch, reducing the potential batch bias when analyzing.
 
 ## Installation
+
+To install the latest version on
+[CRAN](https://CRAN.R-project.org/package=experDesign) use:
+
+``` r
+install.packages("experDesign")
+```
 
 You can install the development version from
 [GitHub](https://github.com/) with:
@@ -89,13 +99,13 @@ given our max number of samples per batch:
 d <- design(metadata, size_batch)
 # It is a list but we can convert it to a vector with:
 batch_names(d)
-#>  [1] "SubSet2" "SubSet3" "SubSet1" "SubSet1" "SubSet2" "SubSet1" "SubSet2"
-#>  [8] "SubSet2" "SubSet1" "SubSet3" "SubSet2" "SubSet2" "SubSet3" "SubSet2"
-#> [15] "SubSet3" "SubSet1" "SubSet1" "SubSet3" "SubSet3" "SubSet2" "SubSet2"
-#> [22] "SubSet2" "SubSet3" "SubSet3" "SubSet2" "SubSet1" "SubSet3" "SubSet2"
-#> [29] "SubSet2" "SubSet3" "SubSet3" "SubSet3" "SubSet1" "SubSet3" "SubSet1"
-#> [36] "SubSet1" "SubSet2" "SubSet2" "SubSet1" "SubSet1" "SubSet3" "SubSet1"
-#> [43] "SubSet3" "SubSet2" "SubSet1" "SubSet1" "SubSet1" "SubSet2" "SubSet1"
+#>  [1] "SubSet3" "SubSet2" "SubSet2" "SubSet1" "SubSet3" "SubSet2" "SubSet1"
+#>  [8] "SubSet1" "SubSet2" "SubSet2" "SubSet1" "SubSet2" "SubSet1" "SubSet3"
+#> [15] "SubSet1" "SubSet3" "SubSet2" "SubSet1" "SubSet3" "SubSet1" "SubSet2"
+#> [22] "SubSet1" "SubSet3" "SubSet2" "SubSet1" "SubSet1" "SubSet1" "SubSet1"
+#> [29] "SubSet3" "SubSet2" "SubSet3" "SubSet2" "SubSet3" "SubSet3" "SubSet2"
+#> [36] "SubSet1" "SubSet2" "SubSet1" "SubSet3" "SubSet3" "SubSet2" "SubSet3"
+#> [43] "SubSet2" "SubSet3" "SubSet3" "SubSet1" "SubSet1" "SubSet2" "SubSet2"
 #> [50] "SubSet3"
 ```
 
@@ -112,16 +122,16 @@ use:
 r <- replicates(metadata, size_batch, 5)
 lengths(r)
 #> SubSet1 SubSet2 SubSet3 
-#>      22      21      17
+#>      20      20      20
 r
 #> $SubSet1
-#>  [1]  1  3  6 14 16 17 19 21 23 25 26 27 31 34 40 41 42 43 45 48 49 50
+#>  [1]  4  9 10 12 20 21 22 23 25 26 28 29 31 39 40 41 43 45 49 50
 #> 
 #> $SubSet2
-#>  [1]  4  5 10 11 13 15 18 21 23 24 28 32 35 37 38 41 44 45 46 47 50
+#>  [1]  2  7 13 15 16 18 21 23 24 27 30 33 35 36 37 38 41 47 49 50
 #> 
 #> $SubSet3
-#>  [1]  2  7  8  9 12 20 21 22 23 29 30 33 36 39 41 45 50
+#>  [1]  1  3  5  6  8 11 14 17 19 21 23 32 34 41 42 44 46 48 49 50
 ```
 
 Which seeks as controls the most diverse values and adds them to the
@@ -139,9 +149,10 @@ already collected.
 
 Two packages allow to distribute the samples on batches:
 
-  - The [OSAT](https://bioconductor.org/packages/OSAT/) package handles
-    categorical variables but not numeric data. It doesn’t work with our
-    data.
+  - The
+    [OSAT](https://bioconductor.org/packages/release/bioc/html/OSAT.html)
+    package handles categorical variables but not numeric data. It
+    doesn’t work with our data.
 
   - The [minDiff](https://github.com/m-Py/minDiff) package reported in
     [Stats.SE](https://stats.stackexchange.com/a/326015/105234), handles
@@ -159,5 +170,5 @@ I made before developing the package.
 # Other
 
 Please note that this project is released with a [Contributor Code of
-Conduct](https://llrs.github.io/experDesign/CODE_OF_CONDUCT.html). By
-participating in this project you agree to abide by its terms.
+Conduct](https://www.contributor-covenant.org/version/1/0/0/code-of-conduct/).
+By participating in this project you agree to abide by its terms.

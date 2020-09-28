@@ -1,16 +1,14 @@
 ## ----knitsetup, message=FALSE, warning=FALSE, include=FALSE-------------------
 knitr::opts_knit$set(root.dir = ".")
 knitr::opts_chunk$set(collapse = TRUE, warning = TRUE)
-BiocStyle::markdown()
-library("BiocStyle")
 set.seed(445)
 library("experDesign")
 
-## -----------------------------------------------------------------------------
+## ----show---------------------------------------------------------------------
 data(survey, package = "MASS") 
 head(survey)
 
-## ---- fig.show='hold'---------------------------------------------------------
+## ----design, fig.show='hold'--------------------------------------------------
 # To reduce the variables used:
 omit <- c("Wr.Hnd", "NW.Hnd", "Fold", "Pulse", "Clap", "Exer", "Height", "M.I")
 (keep <- colnames(survey)[!colnames(survey) %in% omit])
@@ -21,7 +19,7 @@ index <- design(pheno = survey, size_subset = 70, omit = omit)
 index
 
 ## ----batch_names--------------------------------------------------------------
-batch_names(index)
+head(batch_names(index))
 
 ## ----evaluate_index-----------------------------------------------------------
 out <- evaluate_index(index, survey[, keep])
@@ -39,7 +37,7 @@ unbalanced <- data.frame(Classroom = rep(c("A", "B"), each = samples/2),
                          Age = rnorm(samples, mean = 25, sd = 3))
 table(unbalanced)[, , 1:5]
 
-## -----------------------------------------------------------------------------
+## ----unbalanced_design--------------------------------------------------------
 i <- design(unbalanced, 15)
 
 # Mean entropy en each subset
@@ -59,17 +57,17 @@ index_replicates <- replicates(pheno = survey, size_subset = 70,
                                controls = 10, omit = omit)
 index_replicates
 
-## -----------------------------------------------------------------------------
+## ----index_replicates---------------------------------------------------------
 survey[Reduce(intersect, index_replicates), ]
 
 ## ----batch--------------------------------------------------------------------
 batch <- batch_names(index)
 
-## -----------------------------------------------------------------------------
+## ----inspect------------------------------------------------------------------
 df <- inspect(index, survey, omit = omit)
 head(df)
 
-## -----------------------------------------------------------------------------
+## ----compare_groups-----------------------------------------------------------
 evaluate_entropy(index, survey)
 evaluate_independence(index, survey)
 
@@ -79,12 +77,12 @@ evaluate_mean(index, survey)
 evaluate_sd(index, survey)
 evaluate_mad(index, survey)
 
-## -----------------------------------------------------------------------------
+## ----evaluate_independence----------------------------------------------------
 ev <- evaluate_index(index, survey)
 ev["entropy", "Sex",]
 ev[1:4, "Age",]
 evaluate_independence(index, survey)
 
-## -----------------------------------------------------------------------------
+## ----sessioninfo--------------------------------------------------------------
 sessionInfo()
 
