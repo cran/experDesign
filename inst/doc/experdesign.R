@@ -4,30 +4,40 @@ knitr::opts_chunk$set(collapse = TRUE, warning = TRUE)
 set.seed(445)
 library("experDesign")
 
-## ----show---------------------------------------------------------------------
-data(survey, package = "MASS") 
-head(survey)
+## ----experDesign_setup--------------------------------------------------------
+library("experDesign")
+metadata <- expand.grid(height = seq(60, 80, 5), 
+                        weight = seq(100, 300, 50),
+                        sex = c("Male","Female"))
+head(metadata, 15)
 
-## ----design, fig.show='hold'--------------------------------------------------
-# To reduce the variables used:
-omit <- c("Wr.Hnd", "NW.Hnd", "Fold", "Pulse", "Clap", "Exer", "Height", "M.I")
-(keep <- colnames(survey)[!colnames(survey) %in% omit])
-head(survey[, keep])
+## ----size---------------------------------------------------------------------
+size_data <- nrow(metadata)
+size_batch <- 24
+(batches <- optimum_batches(size_data, size_batch))
+# So now the best number of samples for each batch is less than the available
+(size <- optimum_subset(size_data, batches))
+# The distribution of samples per batch
+sizes_batches(size_data, size, batches)
 
-# Looking for groups at most of 70 samples.
-index <- design(pheno = survey, size_subset = 70, omit = omit)
-index
+## ----design-------------------------------------------------------------------
+d <- design(metadata, size_batch)
+# It is a list but we can convert it to a vector with:
+batch_names(d)
 
-## ----batch_names--------------------------------------------------------------
-head(batch_names(index))
+## ----replicates---------------------------------------------------------------
+r <- replicates(metadata, size_batch, 5)
+lengths(r)
+r
 
-## ----evaluate_index-----------------------------------------------------------
-out <- evaluate_index(index, survey[, keep])
-out[, "Age", ]
+## ----spatial------------------------------------------------------------------
+s <- spatial(r, metadata, rows = LETTERS[1:6], columns = 1:4)
+head(s)
 
-## ----evaluate_orig------------------------------------------------------------
-orig <- evaluate_orig(survey)
-orig[, "Age"]
+## ----report-------------------------------------------------------------------
+report <- inspect(r, metadata)
+report2 <- inspect(s, report, index_name = "position")
+head(report2)
 
 ## ----unbalanced---------------------------------------------------------------
 n <- 99
@@ -48,40 +58,10 @@ evaluate_orig(unbalanced)["entropy", ]
 apply(evaluate_index(i, unbalanced)["entropy", , ], 1, sd)
 
 ## ----QC-----------------------------------------------------------------------
+data(survey, package = "MASS") 
+head(survey)
 samples <- extreme_cases(survey, size = 10)
 survey[samples, ]
-
-## ----replicates---------------------------------------------------------------
-# Looking for groups at most of 70 samples.
-index_replicates <- replicates(pheno = survey, size_subset = 70, 
-                               controls = 10, omit = omit)
-index_replicates
-
-## ----index_replicates---------------------------------------------------------
-survey[Reduce(intersect, index_replicates), ]
-
-## ----batch--------------------------------------------------------------------
-batch <- batch_names(index)
-
-## ----inspect------------------------------------------------------------------
-df <- inspect(index, survey, omit = omit)
-head(df)
-
-## ----compare_groups-----------------------------------------------------------
-evaluate_entropy(index, survey)
-evaluate_independence(index, survey)
-
-evaluate_na(index, survey)
-
-evaluate_mean(index, survey)
-evaluate_sd(index, survey)
-evaluate_mad(index, survey)
-
-## ----evaluate_independence----------------------------------------------------
-ev <- evaluate_index(index, survey)
-ev["entropy", "Sex",]
-ev[1:4, "Age",]
-evaluate_independence(index, survey)
 
 ## ----sessioninfo--------------------------------------------------------------
 sessionInfo()

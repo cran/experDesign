@@ -19,6 +19,9 @@
 spatial <- function(index, pheno, omit = NULL, remove_positions = NULL, rows = LETTERS[1:5],
          columns = 1:10, iterations = 500) {
 
+  stopifnot(length(dim(pheno)) == 2)
+  stopifnot(is.numeric(iterations) && is.finite(iterations))
+
   nrow <- length(rows)
   ncol <- length(columns)
 
@@ -33,6 +36,7 @@ spatial <- function(index, pheno, omit = NULL, remove_positions = NULL, rows = L
          "\n\tPlease check the rows and columns or how you created the index.",
          call. = FALSE)
   }
+
   plate <- matrix(nrow = nrow, ncol = ncol, dimnames = list(rows, columns))
   positions <- position_name(rows, columns)
   if (any(!remove_positions %in% positions$name)) {
@@ -68,9 +72,12 @@ spatial <- function(index, pheno, omit = NULL, remove_positions = NULL, rows = L
   old_rows <- round(as.numeric(rownames(pheno_o)))
   rownames(pheno_o) <- NULL
   new_rows <- as.numeric(rownames(pheno_o))
-
+  size_data <- sum(lengths(index))
+  size_subset <- batches
+  batches <- length(position)
+  size_batches <- internal_batches(size_data, size_subset, batches)
   for (x in seq_len(iterations)) {
-    i <- create_subset(sum(lengths(index)), batches, length(position), name = position)
+    i <- create_index(size_data, size_batches, batches, name = position)
 
     subsets <- evaluate_index(i, pheno_o)
     # Evaluate the differences between the subsets and the originals

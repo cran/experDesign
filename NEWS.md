@@ -1,7 +1,19 @@
+# experDesign 0.1.0
+
+* Added reference to a new package Omixer on the README. 
+
+* Fixed batches sizes errors.
+
+* Speed increase (5x) on design, spatial and replicates.
+
+* Update Code of Conduct.
+
+* Add online documentation url.
+
 # experDesign 0.0.4
 
 * Remove BiocStyle dependency.
-* Gain the hability to name the subsets.
+* Gain the ability to name the subsets.
 * Add examples to all functions.
 * Add function to consider spatial distribution on plates/machines.
 
