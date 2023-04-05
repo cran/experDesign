@@ -1,11 +1,11 @@
 #' Distribute the sample on the plate
 #'
-#' This function assumes that to process the batch the samples are distributes in
-#' a plate. Sometimes you know in advance the
+#' This function assumes that to process the batch the samples are distributed in
+#' a plate with a grid scheme.
 #' @inheritParams design
 #' @param index A list with the samples on each subgroup, as provided from
-#' `design()` or `replicates()`.
-#' @param remove_positions Character, name of positions.
+#' [design()] or [replicates()].
+#' @param remove_positions Character, name of positions to be avoided in the grid.
 #' @param rows Character, name of the rows to be used.
 #' @param columns Character, name of the rows to be used.
 #' @return The indices of which samples go with which batch.
@@ -13,14 +13,14 @@
 #' @examples
 #' data(survey, package = "MASS")
 #' index <- design(survey[, c("Sex", "Smoke", "Age")], size_subset = 50,
-#'                 iterations = 25)
-#' index2 <- spatial(index, survey[, c("Sex", "Smoke", "Age")], iterations = 25)
+#'                 iterations = 10)
+#' index2 <- spatial(index, survey[, c("Sex", "Smoke", "Age")], iterations = 10)
 #' head(index2)
 spatial <- function(index, pheno, omit = NULL, remove_positions = NULL, rows = LETTERS[1:5],
          columns = 1:10, iterations = 500) {
 
   stopifnot(length(dim(pheno)) == 2)
-  stopifnot(is.numeric(iterations) && is.finite(iterations))
+  stopifnot(is_numeric(iterations))
 
   nrow <- length(rows)
   ncol <- length(columns)
@@ -53,19 +53,18 @@ spatial <- function(index, pheno, omit = NULL, remove_positions = NULL, rows = L
   batches <- length(index)
   pheno_o <- omit(pheno, omit)
 
-  original_pheno <- evaluate_orig(pheno_o)
+  num <- is_num(pheno_o)
+  original_pheno <- .evaluate_orig(pheno_o, num)
   original_pheno["na", ] <- original_pheno["na", ]/batches
 
   # Find the numeric values
-  dates <- vapply(pheno_o, function(x){methods::is(x, "Date")}, logical(1L))
+  dates <- vapply(pheno_o, is_date, logical(1L))
   if (any(dates)) {
     warning("The dates will be treat as categories")
   }
 
-  num <- is_num(pheno_o)
-  # Numbers are evaluated 4 times, and categories only 3
-  # check this on evaluate_index
-  eval_n <- ifelse(num, 4, 3)
+
+  eval_n <- evaluations(num)
 
   # Use index to duplicate samples in case the index comes from replicates.
   pheno_o <- pheno_o[unlist(index), ]
@@ -78,14 +77,7 @@ spatial <- function(index, pheno, omit = NULL, remove_positions = NULL, rows = L
   size_batches <- internal_batches(size_data, size_subset, batches)
   for (x in seq_len(iterations)) {
     i <- create_index(size_data, size_batches, batches, name = position)
-
-    subsets <- evaluate_index(i, pheno_o)
-    # Evaluate the differences between the subsets and the originals
-    differences <- abs(sweep(subsets, c(1, 2), original_pheno))
-    # Add the independence of the categorical values
-    subset_ind <- evaluate_independence(i, pheno_o)
-    # Calculate the score for each subset by variable
-    meanDiff <- mean_difference(differences, subset_ind, eval_n)
+    meanDiff <- .check_index(i, pheno_o, num, eval_n, original_pheno)
     # Minimize the value
     optimize <- sum(rowMeans(abs(meanDiff)))
 

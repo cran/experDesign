@@ -18,11 +18,11 @@ extreme_cases <- function(pheno, size, omit = NULL, iterations = 500) {
 
   # Calculate batches
   pheno_o <- omit(pheno, omit)
-
-  original_pheno <- evaluate_orig(pheno_o)
+  num <- is_num(pheno_o)
+  original_pheno <- .evaluate_orig(pheno_o, num = num)
 
   # Find the numeric values
-  dates <- vapply(pheno_o, function(x){methods::is(x, "Date")}, logical(1L))
+  dates <- vapply(pheno_o, is_date, logical(1L))
   if (any(dates)) {
     warning("The dates will be treat as categories")
   }
@@ -32,8 +32,9 @@ extreme_cases <- function(pheno, size, omit = NULL, iterations = 500) {
   size_batches <- internal_batches(nSamples, size, 1)
   for (x in seq_len(iterations)) {
     i <- create_index(nSamples, size_batches, 1)
-
-    subsets <- evaluate_index(i, pheno_o)
+    # Can't use .check_index because there we want to control just some variables.
+    # Double check this!
+    subsets <- .evaluate_index(i, pheno_o, num)
     # Evaluate the differences between the subsets and the originals
     differences <- drop(abs(sweep(subsets, c(1, 2), original_pheno)))
     differences <- differences[-c(1, 4), ]
@@ -66,11 +67,11 @@ extreme_cases <- function(pheno, size, omit = NULL, iterations = 500) {
 #' QC_samplesBatch <- qcSubset(index, 10, TRUE)
 qcSubset <- function(index, size, each = FALSE) {
 
-  if (!is.logical(each)) {
+  if (!is_logical(each)) {
     stop("each should be either TRUE or FALSE")
   }
 
-  if (!is.numeric(size)) {
+  if (!is_numeric(size)) {
     stop("size should be a numeric value")
   }
 
@@ -89,6 +90,9 @@ qcSubset <- function(index, size, each = FALSE) {
 #' Check index distribution on batches
 #'
 #' Report the statistics for each subset and variable compared to the original.
+#'
+#' The closer the values are to 0, the less difference is with the original
+#' distribution, so it is a better randomization.
 #' @inheritParams design
 #' @inheritParams qcSubset
 #' @return A matrix with the differences with the original data.
@@ -104,26 +108,25 @@ check_index <- function(pheno, index, omit = NULL) {
   batches <- length(index)
 
   pheno_o <- omit(pheno, omit)
+  if (!.check_data(pheno_o)) {
+    warning("There might be some problems with the data use check_data().")
+  }
   num <- is_num(pheno_o)
-  # Numbers are evaluated 4 times, and categories only 3
-  # check this on evaluate_index
-  eval_n <- ifelse(num, 4, 3)
-
-  original_pheno <- evaluate_orig(pheno_o)
+  eval_n <- evaluations(num)
+  original_pheno <- .evaluate_orig(pheno_o, num)
   original_pheno["na", ] <- original_pheno["na", ]/batches
 
-  subsets <- evaluate_index(index, pheno_o)
+  .check_index(index, pheno_o, num, eval_n, original_pheno)
+}
+
+
+.check_index <- function(index, pheno_o, num, eval_n, eval_orig) {
+
+  subsets <- .evaluate_index(index, pheno_o, num)
   # Evaluate the differences between the subsets and the originals
-  differences <- abs(sweep(subsets, c(1, 2), original_pheno))
+  differences <- abs(sweep(subsets, c(1, 2), eval_orig))
   # Add the independence of the categorical values
   subset_ind <- evaluate_independence(index, pheno_o)
-
   # Calculate the score for each subset by variable
-  meanDiff <- apply(differences, 3, function(x) {
-
-    x <- rbind(x, "ind" = 0)
-    x <- insert(x, subset_ind, name = "ind")
-    colSums(x, na.rm = TRUE)/eval_n
-  })
-  meanDiff
+  mean_difference(differences, subset_ind, eval_n)
 }

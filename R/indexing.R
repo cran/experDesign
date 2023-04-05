@@ -34,19 +34,21 @@ create_subset <- function(size_data, size_subset = NULL, n = NULL, name = "SubSe
 
 # The workhorse function without any check
 create_index <- function(size_data, size_batches, n, name = "SubSet") {
+  # The size of each batch
+  i <- distribute_samples(size_data, size_batches)
+  names(i) <- id2batch_names(name, n)
+  i
+}
 
+id2batch_names <- function(name, n) {
   if (length(name) != 1 && length(name) != n) {
     stop("Provide a single character or a vector the same size of the batches.",
          call. = FALSE)
-  } else if (length(name) == 1) {
+  }
+  if (length(name) == 1) {
     name <- paste0(name, seq_len(n))
   }
-
-  # The size of each batch
-  i <- distribute_samples(size_data, size_batches)
-  names(i) <- name
-  i
-
+  name
 }
 
 distribute_samples <- function(size_data, size_subsets) {
@@ -71,11 +73,20 @@ distribute_samples <- function(size_data, size_subsets) {
 #' @examples
 #' plates <- c("P1", "P2", "P1", "P2", "P2", "P3", "P1", "P3", "P1", "P1")
 #' use_index(plates)
-use_index <- function(x){
-  split(seq_along(x), x)
+use_index <- function(x) {
+  stopifnot(is.character(x))
+  if (anyNA(x)) {
+    warning("NAs present in the index. Some samples weren't assigned to a batch?")
+  }
+  .use_index(x)
 }
 
-#
+.use_index <- function(x) {
+  factors <- x
+  factors[is.na(x)] <- "NA"
+  split(seq_along(x), factors)
+}
+
 #' Name the batch
 #'
 #' Given an index return the name of the batches the samples are in
@@ -91,4 +102,65 @@ use_index <- function(x){
 batch_names <- function(i) {
   names <- rep(names(i), lengths(i))
   names[order(unlist(i, use.names = FALSE))]
+}
+
+#' Compares two indexes
+#'
+#' Compare the distribution of samples with two different batches.
+#' @param index1,index2 A list with the index for each sample, the name of the
+#' column in `pheno` with the batch subset or the character .
+#' @param pheno A data.frame of the samples with the characteristics to normalize.
+#' @returns A matrix with the variables and the columns of of each batch.
+#' Negative values indicate `index1` was better.
+#' @export
+#' @seealso [check_index()]
+#' @examples
+#' index1 <- create_subset(50, 24)
+#' index2 <- batch_names(create_subset(50, 24))
+#' metadata <- expand.grid(height = seq(60, 80, 5), weight = seq(100, 300, 50),
+#'                          sex = c("Male","Female"))
+#' compare_index(metadata, index1, index2)
+compare_index <- function(pheno, index1, index2) {
+  if (is.character(index1) && length(index1) == nrow(pheno)) {
+    index1 <- use_index(index1)
+  } else if (is.character(index1) && length(index1) == 1 && index1 %in% colnames(pheno)) {
+    index0 <- index1
+    index1 <- use_index(pheno[[index1]])
+    pheno <- pheno[, !colnames(pheno) %in% index0]
+  } else if (is.character(index1)) {
+    stop("index1 is not present")
+  }
+
+  if (is.character(index2) && length(index2) == nrow(pheno)) {
+    index2 <- use_index(index2)
+  } else if (is.character(index2) && length(index2) == 1 && index2 %in% colnames(pheno)) {
+    index0 <- index2
+    index2 <- use_index(pheno[[index2]])
+    pheno <- pheno[, !colnames(pheno) %in% index0]
+  } else if (is.character(index1)) {
+    stop("index2 is not present")
+  }
+
+  if (sum(lengths(index1)) != nrow(pheno)) {
+    stop("Indices do not match the number of samples in pheno.")
+  }
+  if (sum(lengths(index1)) != sum(lengths(index2))) {
+    stop("Indices don't seem from the same data, their numbers are not equivalent.")
+  }
+  if (length(index1) != length(index2)) {
+    stop("Different number of batches in the indices.")
+  }
+
+  batches <- length(index1)
+  num <- is_num(pheno)
+  eval_n <- evaluations(num)
+
+  original_pheno <- .evaluate_orig(pheno, num)
+  original_pheno["na", ] <- original_pheno["na", ]/batches
+
+  ci1 <- .check_index(index1, pheno, num, eval_n, original_pheno)
+  ci2 <- .check_index(index2, pheno, num, eval_n, original_pheno)
+
+  ci1 - ci2
+
 }

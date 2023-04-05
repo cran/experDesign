@@ -16,13 +16,13 @@ spatial(
 }
 \arguments{
 \item{index}{A list with the samples on each subgroup, as provided from
-\code{design()} or \code{replicates()}.}
+\code{\link[=design]{design()}} or \code{\link[=replicates]{replicates()}}.}
 
 \item{pheno}{Data.frame with the sample information.}
 
 \item{omit}{Name of the columns of the \code{pheno} that will be omitted.}
 
-\item{remove_positions}{Character, name of positions.}
+\item{remove_positions}{Character, name of positions to be avoided in the grid.}
 
 \item{rows}{Character, name of the rows to be used.}
 
@@ -34,13 +34,13 @@ spatial(
 The indices of which samples go with which batch.
 }
 \description{
-This function assumes that to process the batch the samples are distributes in
-a plate. Sometimes you know in advance the
+This function assumes that to process the batch the samples are distributed in
+a plate with a grid scheme.
 }
 \examples{
 data(survey, package = "MASS")
 index <- design(survey[, c("Sex", "Smoke", "Age")], size_subset = 50,
-                iterations = 25)
-index2 <- spatial(index, survey[, c("Sex", "Smoke", "Age")], iterations = 25)
+                iterations = 10)
+index2 <- spatial(index, survey[, c("Sex", "Smoke", "Age")], iterations = 10)
 head(index2)
 }

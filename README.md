@@ -7,29 +7,32 @@
 
 [![CRAN
 status](https://www.r-pkg.org/badges/version/experDesign)](https://CRAN.R-project.org/package=experDesign)
-[![R build
-status](https://github.com/llrs/experDesign/workflows/R-CMD-check/badge.svg)](https://github.com/llrs/experDesign/actions?workflow=R-CMD-check)
-[![AppVeyor build
-status](https://ci.appveyor.com/api/projects/status/github/llrs/experDesign?branch=master&svg=true)](https://ci.appveyor.com/project/llrs/experDesign)
-[![Travis build
-status](https://travis-ci.org/llrs/experDesign.svg?branch=master)](https://travis-ci.org/llrs/experDesign)
+[![CRAN
+checks](https://badges.cranchecks.info/worst/experDesign.svg)](https://cran.r-project.org/web/checks/check_results_experDesign.html)
+[![R-CMD-check](https://github.com/llrs/experDesign/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/llrs/experDesign/actions/workflows/R-CMD-check.yaml)
 [![Coverage
-status](https://codecov.io/gh/llrs/experDesign/branch/master/graph/badge.svg)](https://codecov.io/github/llrs/experDesign?branch=master)
+status](https://codecov.io/gh/llrs/experDesign/branch/master/graph/badge.svg)](https://app.codecov.io/github/llrs/experDesign)
 [![Lifecycle:
 stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![Project Status: Active - The project has reached a stable, usable
 state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![JOSS](https://joss.theoj.org/papers/10.21105/joss.03358/status.svg)](https://doi.org/10.21105/joss.03358)
+[![DOI](https://zenodo.org/badge/142569201.svg)](https://zenodo.org/badge/latestdoi/142569201)
+
 <!-- badges: end -->
 
-The goal of experDesign is to help you decide which samples go in which
-batch, reducing the potential batch bias before performing an
-experiment. It provides three main functions :
+The goal of experDesign is to help you manage your samples before an
+experiment but after they are collected. For example, checking for
+common problems in the data, and help reduce or even prevent batch bias
+before performing an experiment, or measure once it is already done It
+provides four main functions:
 
--   `design()`: Randomize the samples according to their variables.
--   `replicates()`: Selects some samples for replicates and randomizes
-    the samples.
--   `spatial()`: Randomize the samples on a spatial grid.
+- `check_data()`: Check if there are any problems with the data.
+- `design()`: Randomize the samples according to their variables.
+- `replicates()`: Selects some samples for replicates and randomizes the
+  samples (highly recommended).
+- `spatial()`: Randomize the samples on a spatial grid.
 
 ## Installation
 
@@ -40,13 +43,17 @@ To install the latest version on
 install.packages("experDesign")
 ```
 
-You can install the development version from
-[GitHub](https://github.com/) with:
+<div class="pkgdown-devel">
+
+You can install the development version of pkgdown from
+[GitHub](https://github.com/llrs/experDesign) with:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("llrs/experDesign")
 ```
+
+</div>
 
 ## Example
 
@@ -72,15 +79,39 @@ head(survey)
 #> 6 21.000
 ```
 
-The dataset has numeric, categorical values and some `NA`’s value.
+The dataset has numeric, categorical values and `NA` values.
 
-# Picking samples for each batch
+### Checking initial data
+
+We can check some issues from an experimental point of view via
+`check_data()`:
+
+``` r
+check_data(survey)
+#> Warning: Two categorical variables don't have all combinations.
+#> Warning: Some values are missing.
+#> Warning: There is a combination of categories with no replicates; i.e. just one
+#> sample.
+#> [1] FALSE
+```
+
+As you can see with the warnings we get a collections of problems. In
+general, try to have at least 3 replicates for each condition and try to
+have all the data of each variable.
+
+### Picking samples for each batch
 
 Imagine that we can only work in groups of 70, and we want to randomize
-by Sex, Smoke, Age, and by writing hand.  
-There are 1.6543999^{61} combinations some of them would be have in a
-single experiment all the right handed students. We could measure all
-these combinations but we can try to find an optimum value.
+by Sex, Smoke, Age, and by hand.  
+There are 1.6543999^{61} combinations of samples per batch in a this
+experiment. However, in some of those combinations all the right handed
+students are in the same batch making it impossible to compare the right
+handed students with the others and draw conclusions from it.
+
+We could check all the combinations to select those that allow us to do
+this comparison. But as this would be too long with `experDesign` we can
+try to find the combination with the best design by comparing each
+combination with the original according to multiple statistics.
 
 ``` r
 # To reduce the variables used:
@@ -96,40 +127,52 @@ head(survey[, keep])
 #> 5   Male Right Never 23.667
 #> 6 Female Right Never 21.000
 
+# Set a seed for reproducibility
+set.seed(87732135)
 # Looking for groups at most of 70 samples.
-index <- design(pheno = survey, size_subset = 70, omit = omit)
+index <- design(pheno = survey, size_subset = 70, omit = omit, iterations = 100)
+#> Warning: There might be some problems with the data use check_data().
 index
 #> $SubSet1
-#>  [1]  14  16  29  30  33  37  39  49  51  52  57  68  72  73  74  76  77  78  82
-#> [20]  92  93 107 108 109 111 118 122 123 124 125 129 137 140 142 151 152 158 160
-#> [39] 162 164 165 168 170 181 182 183 184 191 193 195 214 218 221 222 223 224 228
-#> [58] 234 235 237
+#>  [1]   3   9  10  14  16  21  23  24  25  30  44  46  56  57  59  62  63  68  69
+#> [20]  70  73  80  81  85  90  94  95  97 101 103 104 105 106 111 113 119 123 125
+#> [39] 139 143 151 155 164 168 174 177 178 188 190 191 200 202 210 216 224 228 229
+#> [58] 232 234 237
 #> 
 #> $SubSet2
-#>  [1]   2   3   4  12  13  15  25  27  32  43  44  50  53  54  63  65  66  71  79
-#> [20]  83  84  85  86 101 102 106 116 121 131 135 136 138 139 144 147 149 153 157
-#> [39] 161 163 167 171 175 180 188 192 194 204 209 211 212 213 215 216 219 225 226
-#> [58] 227 229
+#>  [1]   5   6  11  18  19  22  31  34  37  38  39  40  41  47  49  53  54  55  58
+#> [20]  60  65  66  71  74  84  91  96 100 108 124 126 127 133 134 144 145 148 158
+#> [39] 159 160 161 162 166 169 180 185 186 193 198 199 203 204 205 208 214 215 226
+#> [58] 231 235
 #> 
 #> $SubSet3
-#>  [1]   1   5   7   8  11  17  20  21  22  23  24  31  34  38  40  41  45  48  55
-#> [20]  56  60  62  64  67  87  90  94 100 104 105 110 112 113 114 115 117 119 120
-#> [39] 126 128 145 155 156 159 166 169 172 178 179 185 187 196 199 200 202 203 210
-#> [58] 220 230
+#>  [1]   1   2  13  15  26  27  36  42  48  50  51  52  61  64  67  72  76  77  78
+#> [20]  86  92  98 102 107 110 115 117 118 120 121 130 136 138 140 141 142 147 156
+#> [39] 167 171 173 176 184 189 194 196 197 206 209 211 212 217 218 219 221 222 227
+#> [58] 230 233
 #> 
 #> $SubSet4
-#>  [1]   6   9  10  18  19  26  28  35  36  42  46  47  58  59  61  69  70  75  80
-#> [20]  81  88  89  91  95  96  97  98  99 103 127 130 132 133 134 141 143 146 148
-#> [39] 150 154 173 174 176 177 186 189 190 197 198 201 205 206 207 208 217 231 232
-#> [58] 233 236
+#>  [1]   4   7   8  12  17  20  28  29  32  33  35  43  45  75  79  82  83  87  88
+#> [20]  89  93  99 109 112 114 116 122 128 129 131 132 135 137 146 149 150 152 153
+#> [39] 154 157 163 165 170 172 175 179 181 182 183 187 192 195 201 207 213 220 223
+#> [58] 225 236
 ```
 
 We can transform then into a vector to append to the file or to pass to
-the lab mate with:
+a colleague with:
 
 ``` r
 head(batch_names(index))
-#> [1] "SubSet3" "SubSet2" "SubSet2" "SubSet2" "SubSet3" "SubSet4"
+#> [1] "SubSet3" "SubSet3" "SubSet1" "SubSet4" "SubSet2" "SubSet2"
+# Or via inspect() to keep it in a matrix format:
+head(inspect(index, survey[, keep]))
+#>      Sex W.Hnd Smoke    Age   batch
+#> 1 Female Right Never 18.250 SubSet3
+#> 2   Male  Left Regul 17.583 SubSet3
+#> 3   Male Right Occas 16.917 SubSet1
+#> 4   Male Right Never 20.333 SubSet4
+#> 5   Male Right Never 23.667 SubSet2
+#> 6 Female Right Never 21.000 SubSet2
 ```
 
 # Previous work
@@ -142,21 +185,21 @@ already collected.
 
 Two packages allow to distribute the samples on batches:
 
--   The
-    [OSAT](https://bioconductor.org/packages/release/bioc/html/OSAT.html)
-    package handles categorical variables but not numeric data. It
-    doesn’t work with our data.
+- The
+  [OSAT](https://bioconductor.org/packages/release/bioc/html/OSAT.html)
+  package handles categorical variables but not numeric data. It doesn’t
+  work with our data.
 
--   The [minDiff](https://github.com/m-Py/minDiff) package reported in
-    [Stats.SE](https://stats.stackexchange.com/a/326015/105234), handles
-    both numeric and categorical data. But it can only optimize for two
-    nominal criteria. It doesn’t work for our data.
+- The [minDiff](https://github.com/m-Py/minDiff) package reported in
+  [Stats.SE](https://stats.stackexchange.com/a/326015/105234), handles
+  both numeric and categorical data. But it can only optimize for two
+  nominal criteria. It doesn’t work for our data.
 
--   The [Omixer](https://bioconductor.org/packages/Omixer/) package
-    handles both numeric and categorical data (converting categorical
-    variables to numeric). But both the same way either Pearson’s
-    Chi-squared Test if there are few samples or Kendall’s correlation.
-    It does allow to protect some spots from being used.
+- The [Omixer](https://bioconductor.org/packages/Omixer/) package
+  handles both numeric and categorical data (converting categorical
+  variables to numeric). But both the same way either Pearson’s
+  Chi-squared Test if there are few samples or Kendall’s correlation. It
+  does allow to protect some spots from being used.
 
 If you are still designing the experiment and do not have collected any
 data [DeclareDesign](https://cran.r-project.org/package=DeclareDesign)

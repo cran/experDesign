@@ -1,3 +1,19 @@
+# experDesign 0.2.0
+
+* New `follow_up()` and `follow_up2()` to continue an experiment safely (#22). 
+
+* New `check_data()` to check the input data (#37).
+
+* New `compare_index()` to compare different indexes per batch.
+
+* Use all categories combined (column `mix_cat`) for comparing the batches.
+
+* Increased the internal coherence of checks.
+
+* Added thesis advisers on the description.
+
+* Update documentation.
+
 # experDesign 0.1.0
 
 * Added reference to a new package Omixer on the README. 
