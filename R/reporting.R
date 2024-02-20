@@ -15,10 +15,11 @@
 #' batches <- inspect(index, survey[, columns])
 #' head(batches)
 inspect <- function(i, pheno, omit = NULL, index_name = "batch") {
-  batch <- batch_names(i)
-  i <- unlist(i, FALSE, FALSE)
-  i <- sort(i)
-  pheno <- pheno[i, ]
+
+  batch <- batch_names(translate_index(i))
+  pheno <- apply_index(pheno, i)
+  # Remove old rows (only needed to inspect changes)
+  pheno[ , "old_rows"] <- NULL
 
   # Omit columns
   if (!is.null(omit)) {
@@ -26,10 +27,7 @@ inspect <- function(i, pheno, omit = NULL, index_name = "batch") {
   } else {
     pheno_o <- pheno
   }
-
-  out <- cbind(pheno_o, batch)
-  colnames(out)[ncol(out)] <- index_name
-  out
+  add_column(pheno_o, values = batch, name = index_name)
 }
 
 

@@ -1,6 +1,6 @@
 Package: experDesign
 Title: Design Experiments for Batches
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: c(
     person("Lluís", "Revilla Sancho", , "lluis.revilla@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-9747-2570")),
@@ -23,13 +23,13 @@ VignetteBuilder: knitr
 Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.0
 NeedsCompilation: no
-Packaged: 2023-04-05 15:10:29 UTC; lrevilla@irsicaixa.es
+Packaged: 2024-02-19 23:08:01 UTC; lluis
 Author: Lluís Revilla Sancho [aut, cre]
     (<https://orcid.org/0000-0001-9747-2570>),
   Juanjo Lozano [ths] (<https://orcid.org/0000-0001-7613-3908>),
   Azucena Salas Martinez [ths] (<https://orcid.org/0000-0003-4572-2907>)
 Maintainer: Lluís Revilla Sancho <lluis.revilla@gmail.com>
 Repository: CRAN
-Date/Publication: 2023-04-05 15:43:20 UTC
+Date/Publication: 2024-02-20 02:20:02 UTC

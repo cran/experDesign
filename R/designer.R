@@ -114,6 +114,8 @@ replicates <- function(pheno, size_subset, controls, omit = NULL,
   stopifnot(is_numeric(size_subset) && length(size_subset) == 1)
   stopifnot(length(dim(pheno)) == 2)
   stopifnot(is_numeric(iterations))
+  stopifnot("There should be a positive integer of controls" = is.numeric(controls) && length(controls) && as.integer(controls) == controls &&
+              is.finite(controls) && !is.na(controls) && controls > 0)
 
   size_data <- nrow(pheno)
   if (size_subset >= size_data) {
