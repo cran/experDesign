@@ -11,7 +11,7 @@
 
 <meta name="author" content="Lluís Revilla Sancho" />
 
-<meta name="date" content="2024-02-20" />
+<meta name="date" content="2024-05-20" />
 
 <title>exprDesign</title>
 
@@ -1569,7 +1569,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">exprDesign</h1>
 <h4 class="author">Lluís Revilla Sancho</h4>
-<h4 class="date">2024-02-20</h4>
+<h4 class="date">2024-05-20</h4>
 
 </div>
 
@@ -1676,11 +1676,11 @@ batches:</p>
 <pre class="r"><code>size_data &lt;- nrow(metadata)
 size_batch &lt;- 24
 (batches &lt;- optimum_batches(size_data, size_batch))
-## [1] 3
-# So now the best number of samples for each batch is less than the available
+## [1] 3</code></pre>
+<pre class="r"><code># So now the best number of samples for each batch is less than the available
 (size &lt;- optimum_subset(size_data, batches))
-## [1] 17
-# The distribution of samples per batch
+## [1] 17</code></pre>
+<pre class="r"><code># The distribution of samples per batch
 sizes_batches(size_data, size, batches)
 ## [1] 17 17 16</code></pre>
 <p>Note that instead of using a whole batch and then leave a single
@@ -1715,8 +1715,8 @@ use:</p>
 <pre class="r"><code>repli &lt;- replicates(metadata, size_batch, 5)
 lengths(repli)
 ## SubSet1 SubSet2 SubSet3 
-##      21      21      18
-repli
+##      21      21      18</code></pre>
+<pre class="r"><code>repli
 ## $SubSet1
 ##  [1]  3  9 10 16 17 20 27 28 30 31 32 33 34 35 40 41 42 44 45 48 49
 ## 
@@ -1737,22 +1737,28 @@ different from the design without replicates.</p>
 <pre class="r"><code>spati &lt;- spatial(repli, metadata, rows = LETTERS[1:6], columns = 1:4)
 head(spati)
 ## $A1
-## [1] 21  5 11
+## SubSet1 SubSet2 SubSet3 
+##      32      43      56 
+## 
+## $A2
+## SubSet1 SubSet2 SubSet3 
+##       3      37      27 
+## 
+## $A3
+## SubSet1 SubSet2 SubSet3 
+##      34      29      28 
+## 
+## $A4
+## SubSet1 SubSet2 SubSet3 
+##      36       5      60 
 ## 
 ## $B1
-## NULL
+## SubSet1 SubSet2 SubSet3 
+##      52      13      33 
 ## 
-## $C1
-## [1] 58 13 33
-## 
-## $D1
-## [1] 35
-## 
-## $E1
-## [1]  3  8 15
-## 
-## $F1
-## [1]  9 19 53</code></pre>
+## $B2
+## SubSet1 SubSet2 SubSet3 
+##      39       7      53</code></pre>
 </div>
 <div id="report-for-easy-on-field-usage" class="section level1">
 <h1>Report for easy on field usage</h1>
@@ -1762,12 +1768,12 @@ head(spati)
 report2 &lt;- inspect(spati, report, index_name = &quot;position&quot;)
 head(report2)
 ##   height weight  sex   batch position
-## 1     60    100 Male SubSet3       A1
-## 2     65    100 Male SubSet3       A1
-## 3     70    100 Male SubSet1       A1
-## 4     75    100 Male SubSet2       C1
-## 5     80    100 Male SubSet2       C1
-## 6     60    150 Male SubSet3       C1</code></pre>
+## 1     60    100 Male SubSet3       C3
+## 2     65    100 Male SubSet3       C2
+## 3     70    100 Male SubSet1       A2
+## 4     75    100 Male SubSet2       E1
+## 5     80    100 Male SubSet2       A4
+## 6     60    150 Male SubSet3       B4</code></pre>
 <p>And now we can see the batch and position of each sample</p>
 </div>
 <div id="compare-indices" class="section level1">
@@ -1776,10 +1782,10 @@ head(report2)
 <pre class="r"><code>desi2 &lt;- create_subset(nrow(metadata), size_batch)
 compare_index(metadata, desi, desi2)
 ##         subgroups
-##               SubSet1    SubSet2     SubSet3
-##   height -0.003378784 -0.4899827  -1.3652524
-##   weight -5.083194894 -5.0202051 -12.6611209
-##   sex     0.085527089  0.1267009   0.1152791</code></pre>
+##              SubSet1     SubSet2       SubSet3
+##   height  0.21717472  0.30918015  -0.008630805
+##   weight -3.20170175 -3.83581391 -11.626327348
+##   sex    -0.00669491  0.00669491  -0.011421802</code></pre>
 <p>As many of the variables for multiple subsets are negative it shows
 that <code>desi</code> is better.</p>
 </div>
@@ -1801,23 +1807,23 @@ table(unbalanced[, 1:2])
 <p>In this dataset there is only one female, resulting in a classroom
 full of males. Age is independent of the sex or classroom.</p>
 <pre class="r"><code>i &lt;- design(unbalanced, 15)
-## Warning: There might be some problems with the data use check_data().
-evaluation &lt;- evaluate_index(i, unbalanced)
-## Warning: There might be some problems with the data use check_data().
-# Mean entropy en each subset
+## Warning: There might be some problems with the data use check_data().</code></pre>
+<pre class="r"><code>evaluation &lt;- evaluate_index(i, unbalanced)
+## Warning: There might be some problems with the data use check_data().</code></pre>
+<pre class="r"><code># Mean entropy en each subset
 rowMeans(evaluation[&quot;entropy&quot;, , ])
 ##  Classroom        Sex        Age    mix_cat 
-## 0.98906095 0.05047991 0.00000000 0.96130358
-# Original entropy on the dataset
+## 0.96035770 0.05303319 0.00000000 0.93994182</code></pre>
+<pre class="r"><code># Original entropy on the dataset
 evaluate_orig(unbalanced)[&quot;entropy&quot;, ]
 ## Warning in evaluate_orig(unbalanced): There might be some problems with the
 ## data use check_data().
 ##  Classroom        Sex        Age    mix_cat 
-## 1.00000000 0.08079314 0.00000000 0.67554928
-# Dispersion of the entropy
+## 1.00000000 0.08079314 0.00000000 0.67554928</code></pre>
+<pre class="r"><code># Dispersion of the entropy
 apply(evaluation[&quot;entropy&quot;, , ], 1, sd)
 ##  Classroom        Sex        Age    mix_cat 
-## 0.01057627 0.13355727 0.00000000 0.08171973</code></pre>
+## 0.05017590 0.14031263 0.00000000 0.07994645</code></pre>
 <p>We can see that in this simple case where a single variable has all
 the other cases we approximately reached the same entropy levels.</p>
 </div>
@@ -1840,46 +1846,46 @@ head(survey)
 ## 3 16.917
 ## 4 20.333
 ## 5 23.667
-## 6 21.000
-samples &lt;- extreme_cases(survey, size = 10)
+## 6 21.000</code></pre>
+<pre class="r"><code>samples &lt;- extreme_cases(survey, size = 10)
 survey[samples, ]
 ##        Sex Wr.Hnd NW.Hnd W.Hnd    Fold Pulse    Clap Exer Smoke Height      M.I
-## 41  Female   17.5   16.0 Right  L on R    NA   Right Some Never 169.00   Metric
-## 52    Male   20.5   20.0 Right  L on R    68   Right Freq Never 190.00   Metric
-## 76  Female   17.5   17.5 Right Neither    68   Right Freq Heavy 170.00   Metric
-## 82    Male   19.2   18.9 Right  R on L    76   Right Freq Never 176.50 Imperial
-## 93  Female   18.2   17.5 Right  L on R    70   Right Some Never 165.00   Metric
-## 137   &lt;NA&gt;   19.8   19.0  Left  L on R    73 Neither Freq Never 172.00   Metric
-## 139   Male   20.0   19.5 Right  L on R    NA   Right Freq Never 170.00   Metric
-## 142 Female   18.3   19.0 Right  R on L    NA   Right None Never 165.00   Metric
-## 154   Male   21.5   21.6 Right  R on L    69   Right Freq Never 172.72 Imperial
-## 221   Male   23.2   23.3 Right  L on R    NA   Right None Heavy 171.00   Metric
+## 5     Male   20.0   20.0 Right Neither    35   Right Some Never 165.00   Metric
+## 9     Male   20.0   19.5 Right  R on L    72   Right Some Never 175.00   Metric
+## 84  Female   17.0   17.4 Right  R on L    NA Neither Some Never     NA     &lt;NA&gt;
+## 99    Male   19.5   19.4 Right Neither    NA   Right Freq Never 165.00   Metric
+## 107 Female   16.2   16.4 Right  R on L    NA   Right Freq Occas 172.00   Metric
+## 171 Female   16.5   17.0 Right  L on R    NA   Right Some Never 168.00   Metric
+## 177   Male   20.5   20.5 Right Neither    76   Right Freq Regul 172.72 Imperial
+## 191   Male   20.0   19.5 Right  R on L    92   Right Some Never 179.10 Imperial
+## 201 Female   16.2   15.8 Right  R on L    61   Right Some Occas 167.00   Metric
+## 202   Male   21.0   21.0 Right  L on R    48 Neither Freq Never 174.00   Metric
 ##        Age
-## 41  17.500
-## 52  17.500
-## 76  20.667
-## 82  20.167
-## 93  19.667
-## 137 21.500
-## 139 21.417
-## 142 21.083
-## 154 70.417
-## 221 20.917</code></pre>
+## 5   23.667
+## 9   19.000
+## 84  17.167
+## 99  18.083
+## 107 17.000
+## 171 73.000
+## 177 36.583
+## 191 18.917
+## 201 19.250
+## 202 21.333</code></pre>
 <p>You can also test a given index with <code>check_index()</code>:</p>
 <pre class="r"><code>check_index(unbalanced, i)
 ## Warning in check_index(unbalanced, i): There might be some problems with the
 ## data use check_data().
 ##            subgroups
 ##                SubSet1    SubSet2    SubSet3    SubSet4    SubSet5    SubSet6
-##   Classroom 0.02244529 0.03105896 0.02629978 0.02137583 0.02137583 0.02629978
-##   Sex       0.16047517 0.22439953 0.16047517 0.16047517 0.16047517 0.16047517
-##   Age       0.42561876 0.23886131 0.43542914 0.19353035 0.12717736 0.34552062
-##   mix_cat   0.08031059 0.02527493 0.07741971 0.08111268 0.08111268 0.07741971
+##   Classroom 0.02116629 0.02116629 0.04000152 0.04000152 0.06572331 0.02009684
+##   Sex       0.17853702 0.17853702 0.24841904 0.17853702 0.17853702 0.17853702
+##   Age       0.20351157 0.19733814 0.25375813 0.28706685 0.12655149 0.14621487
+##   mix_cat   0.08031059 0.08031059 0.03045638 0.06618417 0.04689282 0.08111268
 ##            subgroups
 ##                SubSet7
-##   Classroom 0.02629978
-##   Sex       0.16047517
-##   Age       0.25569779
+##   Classroom 0.02502079
+##   Sex       0.17853702
+##   Age       0.45676502
 ##   mix_cat   0.07741971</code></pre>
 <p>Each row has information about how accurate is a given variable to
 the samples available (on this case <code>unbalanced</code>). Some
@@ -1899,55 +1905,55 @@ multiple statistics.</p>
 <pre class="r"><code># To reduce the variables used:
 omit &lt;- c(&quot;Wr.Hnd&quot;, &quot;NW.Hnd&quot;, &quot;Fold&quot;, &quot;Pulse&quot;, &quot;Clap&quot;, &quot;Exer&quot;, &quot;Height&quot;, &quot;M.I&quot;)
 (keep &lt;- colnames(survey)[!colnames(survey) %in% omit])
-## [1] &quot;Sex&quot;   &quot;W.Hnd&quot; &quot;Smoke&quot; &quot;Age&quot;
-head(survey[, keep])
+## [1] &quot;Sex&quot;   &quot;W.Hnd&quot; &quot;Smoke&quot; &quot;Age&quot;</code></pre>
+<pre class="r"><code>head(survey[, keep])
 ##      Sex W.Hnd Smoke    Age
 ## 1 Female Right Never 18.250
 ## 2   Male  Left Regul 17.583
 ## 3   Male Right Occas 16.917
 ## 4   Male Right Never 20.333
 ## 5   Male Right Never 23.667
-## 6 Female Right Never 21.000
-
+## 6 Female Right Never 21.000</code></pre>
+<pre class="r"><code>
 # Set a seed for reproducibility
 # Looking for groups at most of 70 samples.
 index &lt;-  create_subset(nrow(survey), size_subset = 70)
 index
 ## $SubSet1
-##  [1]   6  13  14  15  16  17  20  26  32  34  37  47  48  51  53  56  58  59  63
-## [20]  64  67  75  77  79  80  81  85  95 102 108 111 114 115 118 119 126 130 131
-## [39] 134 136 154 156 161 180 182 183 189 192 194 202 203 209 210 211 214 224 225
-## [58] 228 229 236
+##  [1]   9  12  21  25  34  37  43  47  58  59  65  67  68  73  74  77  79  80 103
+## [20] 104 113 120 136 140 142 143 144 148 152 153 162 164 165 170 172 173 174 176
+## [39] 178 181 182 185 189 190 192 194 197 202 203 205 208 214 215 217 219 221 224
+## [58] 231 235 237
 ## 
 ## $SubSet2
-##  [1]   3   4   5   8  12  19  22  24  25  28  31  38  45  46  66  68  70  72  78
-## [20]  82  87  91  97  98 104 106 107 112 121 128 129 141 142 149 150 152 153 159
-## [39] 163 165 166 167 174 176 184 188 190 191 195 198 212 216 219 221 223 231 232
-## [58] 234 237
+##  [1]   1   2   7   8  22  23  29  30  33  36  39  42  45  46  51  54  55  64  71
+## [20]  75  76  91 102 105 109 111 114 115 117 118 119 123 125 128 132 135 138 154
+## [39] 155 159 167 177 187 191 193 195 196 198 200 201 207 211 212 218 222 227 228
+## [58] 230 233
 ## 
 ## $SubSet3
-##  [1]   2   7  10  23  27  30  33  39  42  49  52  60  61  62  69  71  73  74  86
-## [20]  88  89  90  94 103 109 113 116 117 123 132 133 135 140 146 151 157 158 160
-## [39] 169 171 172 173 175 181 185 187 199 205 206 207 208 213 215 217 222 226 227
-## [58] 230 235
+##  [1]   3   4  11  13  14  15  18  19  20  24  28  31  32  35  41  48  49  50  52
+## [20]  70  72  81  84  85  86  87  92  93  94  98 112 121 122 124 126 127 129 130
+## [39] 134 137 139 141 147 151 157 158 161 168 171 179 183 199 204 210 213 220 223
+## [58] 225 234
 ## 
 ## $SubSet4
-##  [1]   1   9  11  18  21  29  35  36  40  41  43  44  50  54  55  57  65  76  83
-## [20]  84  92  93  96  99 100 101 105 110 120 122 124 125 127 137 138 139 143 144
-## [39] 145 147 148 155 162 164 168 170 177 178 179 186 193 196 197 200 201 204 218
-## [58] 220 233</code></pre>
+##  [1]   5   6  10  16  17  26  27  38  40  44  53  56  57  60  61  62  63  66  69
+## [20]  78  82  83  88  89  90  95  96  97  99 100 101 106 107 108 110 116 131 133
+## [39] 145 146 149 150 156 160 163 166 169 175 180 184 186 188 206 209 216 226 229
+## [58] 232 236</code></pre>
 <p>We can measure how does this index does:</p>
 <pre class="r"><code>score_index1 &lt;- check_index(survey[, keep], index)
 ## Warning in check_index(survey[, keep], index): There might be some problems
-## with the data use check_data().
-score_index1
+## with the data use check_data().</code></pre>
+<pre class="r"><code>score_index1
 ##          subgroups
 ##               SubSet1    SubSet2    SubSet3    SubSet4
-##   Sex     0.183272313 0.18307418 0.18473404 0.34995773
-##   W.Hnd   0.201330461 0.38189871 0.16814879 0.16765764
-##   Smoke   0.384839974 0.51271703 0.34958370 0.36736401
-##   Age     0.247117147 0.86678868 0.69125158 0.51061368
-##   mix_cat 0.006173258 0.01392375 0.01709306 0.03849348</code></pre>
+##   Sex     0.285472670 0.28479310 0.45087536 0.28479310
+##   W.Hnd   0.406863574 0.56967175 0.38262251 0.38311366
+##   Smoke   0.352226528 0.35423141 0.51717322 0.36004142
+##   Age     0.966161840 0.88451852 0.78376910 1.52773530
+##   mix_cat 0.009637159 0.02713277 0.02836273 0.00787233</code></pre>
 <p>These values come from calculating the difference between the
 original data and the samples for each subset for the median, mean, mad,
 NA, entropy and independence (<code>chisq.test()</code> p.value).</p>
@@ -1957,9 +1963,9 @@ used to compare with other possible index:</p>
 <p>Then it compares to the previous index</p>
 <pre class="r"><code>score_index2 &lt;- check_index(survey[, keep], index2)
 ## Warning in check_index(survey[, keep], index2): There might be some problems
-## with the data use check_data().
-sum(rowMeans(abs(score_index2-score_index1)))
-## [1] 0.9367265</code></pre>
+## with the data use check_data().</code></pre>
+<pre class="r"><code>sum(rowMeans(abs(score_index2-score_index1)))
+## [1] 0.8869192</code></pre>
 <p>If this score is lower than the previous one the new index is
 kept.</p>
 <p>This is done similarly for the spatial search, which adds two new
@@ -1969,8 +1975,8 @@ calculating any statistics.</p>
 <div id="sessioninfo" class="section level1">
 <h1>SessionInfo</h1>
 <pre class="r"><code>sessionInfo()
-## R version 4.3.1 (2023-06-16)
-## Platform: x86_64-pc-linux-gnu (64-bit)
+## R version 4.4.0 (2024-04-24)
+## Platform: x86_64-pc-linux-gnu
 ## Running under: Ubuntu 22.04.4 LTS
 ## 
 ## Matrix products: default
@@ -1992,14 +1998,14 @@ calculating any statistics.</p>
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] experDesign_0.3.0
+## [1] experDesign_0.4.0
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] digest_0.6.34     R6_2.5.1          fastmap_1.1.1     xfun_0.42        
-##  [5] cachem_1.0.8      knitr_1.45        htmltools_0.5.7   rmarkdown_2.25   
-##  [9] lifecycle_1.0.4   cli_3.6.2         sass_0.4.8        jquerylib_0.1.4  
-## [13] compiler_4.3.1    rstudioapi_0.15.0 tools_4.3.1       evaluate_0.23    
-## [17] bslib_0.6.1       yaml_2.3.8        rlang_1.1.3       jsonlite_1.8.8</code></pre>
+##  [1] digest_0.6.35     R6_2.5.1          fastmap_1.2.0     xfun_0.44        
+##  [5] cachem_1.1.0      knitr_1.46        htmltools_0.5.8.1 rmarkdown_2.27   
+##  [9] lifecycle_1.0.4   cli_3.6.2         sass_0.4.9        jquerylib_0.1.4  
+## [13] compiler_4.4.0    rstudioapi_0.16.0 tools_4.4.0       evaluate_0.23    
+## [17] bslib_0.7.0       yaml_2.3.8        rlang_1.1.3       jsonlite_1.8.8</code></pre>
 </div>
 
 

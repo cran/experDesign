@@ -4,15 +4,17 @@
 \alias{check_data}
 \title{Check experiment data}
 \usage{
-check_data(pheno, na.omit = FALSE)
+check_data(pheno, omit = NULL, na.omit = FALSE)
 }
 \arguments{
 \item{pheno}{Data.frame with the variables of each sample, one row one sample.}
 
+\item{omit}{Character vector with the names of the columns to omit.}
+
 \item{na.omit}{Check the effects of missing values too.}
 }
 \value{
-A logical value indicating if everything is alright (TRUE) or not (FALSE).
+A logical value indicating if everything is alright (\code{TRUE} or not (\code{FALSE}).
 }
 \description{
 In order to run a successful experiment a good design is needed even before measuring the data.
@@ -29,4 +31,7 @@ check_data(rdata[-c(1, 3), ])
 data(survey, package = "MASS")
 check_data(survey)
 }
+}
+\seealso{
+\code{\link[=valid_followup]{valid_followup()}}.
 }

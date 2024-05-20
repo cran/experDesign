@@ -16,11 +16,16 @@
 #' head(batches)
 inspect <- function(i, pheno, omit = NULL, index_name = "batch") {
 
+  consistent_index(i, pheno)
+
   batch <- batch_names(translate_index(i))
+  # duplicate rows according to the index
   pheno <- apply_index(pheno, i)
   # Remove old rows (only needed to inspect changes)
   pheno[ , "old_rows"] <- NULL
 
+
+  stopifnot("Samples do not match" = length(i) == length(table(batch)))
   # Omit columns
   if (!is.null(omit)) {
     pheno_o <- pheno[, !colnames(pheno) %in% omit, drop = FALSE]
@@ -46,7 +51,7 @@ inspect <- function(i, pheno, omit = NULL, index_name = "batch") {
 #' nas <- c(137, 70) # Omit rows with NA to avoid warnings in design
 #' index <- design(pheno = survey[-nas, columns], size_subset = 70,
 #'                 iterations = 10)
-#' batches <- inspect(index, survey[, columns])
+#' batches <- inspect(index, survey[-nas, columns])
 #' distribution(batches, "Sex")
 #' distribution(batches, "Smoke")
 distribution <- function(report, column){

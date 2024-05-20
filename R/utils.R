@@ -1,3 +1,4 @@
+# Colum type helpers ####
 is_num <- function(x, ...) {
   if (is.null(ncol(x))) {
     is.numeric(x)
@@ -27,10 +28,16 @@ is_cat <- function(x, ...) {
   }
 }
 
+# Other ####
 
 omit <- function(pheno, omit){
   # Omit columns
   if (!is.null(omit)) {
+    col_diff <- setdiff(omit, colnames(pheno))
+    if (length(col_diff) != 0L) {
+      warning("Columns to omit were not present: ",
+              paste(col_diff, collapse = ", "), ".")
+    }
     pheno[, !colnames(pheno) %in% omit, drop = FALSE]
   } else {
     pheno
@@ -49,6 +56,7 @@ translate_index <- function(index,
   stopifnot(sum(lengths(index)) == length(new_position))
 
   old_position <- sort(old_position)
+  # Used because unlist is not documented to keep order
   for (i in seq_along(index)) {
     m <- match(index[[i]], old_position)
 
@@ -60,11 +68,25 @@ translate_index <- function(index,
   index
 }
 
+
+#' Create position names for a grid.
+#'
+#' @param rows Names of the rows.
+#' @param columns Names of the columns.
+#'
+#' @return A data.frame with the rows and columns and the resulting name row+column.
+#' The name column is a factor for easier sorting in row, column order.
+#' @export
+#' @examples
+#' position_name(c("A", "B"), 1:2)
 position_name <- function(rows, columns) {
+  if (length(intersect(rows, columns)) >= 1) {
+    stop("rows and columns shouldn't share names.")
+  }
   positions <- expand.grid(rows, columns, stringsAsFactors = FALSE)
-  positions$Var2 <- as.character(positions$Var2)
-  positions$name <- apply(positions, 1, paste0, collapse = "")
   colnames(positions)[1:2] <- c("row", "column")
+  positions <- positions[order(positions$row, positions$column), ]
+  positions$name <- as.factor(paste0(positions$row, positions$column))
   positions
 }
 
@@ -125,8 +147,8 @@ release_bullets <- function() {
     "Run: cffr::cff_write()")
 }
 
-# Numbers are evaluated 4 times (mean, sd, mad, na),
-# and categories only 3:  na, entropy, independence.
+# Numbers are evaluated 4 times: mean, sd, mad, na.
+# categories  evaluated 3 times:  na, entropy, independence.
 # check this on evaluate_index
 evaluations <- function(num, eval_cat = 4, eval_num = 3) {
   eval_n <- ifelse(num, eval_cat, eval_num)
@@ -139,8 +161,35 @@ evaluations <- function(num, eval_cat = 4, eval_num = 3) {
 
 add_column <- function(x, values, name) {
   # Add the column and rename it
+  if (name %in% colnames(x)) {
+    msg <- paste("Column", name, "is already present. Did you meant this?")
+    warning(msg, call. = FALSE)
+  }
   out <- cbind(x, values)
   colnames(out)[ncol(out)] <- name
   rownames(out) <- NULL
   out
+}
+
+
+consistent_index <- function(i, pheno) {
+  ui <- unlist(i, FALSE, FALSE)
+  not_matching <- sum(lengths(i)) != NROW(pheno)
+  index_longer <- sum(lengths(i)) > NROW(pheno)
+  no_replicate <- !any(table(ui) > 1)
+  bigger_position <- max(ui, na.rm = TRUE) > NROW(pheno)
+
+  if (bigger_position) {
+    stop("The index has positions that are higher than the number of rows in the data.", call. = FALSE)
+  }
+
+  if (not_matching && index_longer && no_replicate) {
+    stop("Index is longer than the data and there is no replicate.", call. = FALSE)
+  }
+
+  index_shorter <- sum(lengths(i)) < NROW(pheno)
+  if (not_matching && index_shorter) {
+    stop("Index is shorter than the data provided.", call. = FALSE)
+  }
+  TRUE
 }

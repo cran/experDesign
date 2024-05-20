@@ -7,8 +7,8 @@ test_that("spatial works", {
   index2 <- spatial(index, survey[-nas, c("Sex", "Smoke", "Age")],
                     rows = LETTERS[1:9],
                     columns = 1:12, iterations = 25)
-  expect_length(index2, 9*12)
-  expect_equal(names(index2), position_name(rows = LETTERS[1:9], 1:12)$name)
+  expect_lte(length(index2), 9*12)
+  expect_true(all(names(index2) %in% position_name(rows = LETTERS[1:9], 1:12)$name))
   expect_false(any(table(batch_names(index), batch_names(index2)) > 1))
 })
 
@@ -19,9 +19,9 @@ test_that("spatial works with replicates", {
   index <- replicates(survey[-nas, c("Sex", "Smoke", "Age")], size_subset = 50,
                       iterations = 25, controls = 15)
   index2 <- spatial(index, survey[-nas, c("Sex", "Smoke", "Age")], iterations = 25)
-  expect_length(index2, 50)
+  expect_lte(length(index2), 50)
   expect_false(any(is.na(unlist(index2))))
-  expect_equal(names(index2), position_name(rows = LETTERS[1:5], 1:10)$name)
+  expect_true(all(names(index2) %in% position_name(rows = LETTERS[1:5], 1:10)$name))
   expect_true(all(sort(unlist(index2)) == seq_len(325)))
 })
 
@@ -39,3 +39,39 @@ test_that("spatial don't duplicate samples", {
   expect_false(any(table(batch_names(index), batch_names(index2)) > 1))
 })
 
+test_that("Removing rows works", {
+  data(survey, package = "MASS")
+  set.seed(21829)
+  nas <- c(137, 70)
+  index <- design(survey[-nas, c("Sex", "Smoke", "Age")], size_subset = 50,
+                  iterations = 25)
+  index2 <- spatial(index, survey[-nas, c("Sex", "Smoke", "Age")],
+                    rows = LETTERS[1:9], remove_positions = "B",
+                    columns = 1:12, iterations = 25)
+  expect_lte(length(index2), 9*12)
+  expect_true(all(names(index2) %in% position_name(rows = LETTERS[1:9], 1:12)$name))
+  expect_false(any(table(batch_names(index), batch_names(index2)) > 1))
+})
+
+test_that("Removing columns works", {
+  data(survey, package = "MASS")
+  set.seed(21289)
+  nas <- c(137, 70)
+  index <- design(survey[-nas, c("Sex", "Smoke", "Age")], size_subset = 50,
+                  iterations = 25)
+  index2 <- spatial(index, survey[-nas, c("Sex", "Smoke", "Age")],
+                    rows = LETTERS[1:9], remove_positions =  "A",
+                    columns = 1:12, iterations = 25)
+  expect_lte(length(index2), 9*12)
+  expect_true(all(names(index2) %in% position_name(rows = LETTERS[1:9], 1:12)$name))
+  expect_false(any(table(batch_names(index), batch_names(index2)) > 1))
+})
+
+test_that("position_name works", {
+  expect_error(position_name(1:2, 1:2))
+  pn <- position_name(LETTERS[1:2], 1:2)
+  expect_s3_class(pn, "data.frame")
+  expect_equal(pn$row, rep(LETTERS[1:2], each = 2))
+  expect_equal(pn$column, rep(1:2, length.out = 4))
+  expect_equal(pn$name, as.factor(paste0(rep(LETTERS[1:2], each = 2), rep(1:2, length.out = 4))))
+})
